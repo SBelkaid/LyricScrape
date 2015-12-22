@@ -1,0 +1,1 @@
+https://www.musixmatch.com/ws/1.1/track.search?app_id=community-app-v1.0&guid=39587780-1e91-4944-bed8-eb8e4bd6581c&format=xml&page={iteration}&page_size=300&f_stop_words=1&g_album_name_type=1&part=track_artist&track_fields_set=community_track_list&artist_fields_set=community_track_list_artist&q_track_artist={artist_name}&s_track_rating=desc&g_common_track=1
