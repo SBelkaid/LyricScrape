@@ -43,22 +43,30 @@ class Downloader():
 						# print '{} doesn\'t have a lyric, continuing'.format(song.track_name.text)
 						continue
 					splitted_retrieved_name = song.artist_name.text.split(' ')
+					# print splitted_retrieved_name, splitted_searching
 					if len(splitted_searching) == len(splitted_retrieved_name) and\
 					 len(splitted_searching[0]) == len(splitted_retrieved_name[0]): # heeeeeeel gaar
 						songs.add((song.artist_name.text,song.track_name.text)) #add tag element.text for collabs
-						logging.info('Added song: {}'.format(song.track_name.text))
+						logging.info('{} Found song: {}'.format(time.strftime('%D:%H:%M:%S'),song.track_name.text))
 					if len(splitted_searching) != len(splitted_retrieved_name):
-						x = re.search('(?<='+artist_name+' feat\.).*', song.artist_name.text, re.I)
+						x = re.search('(?<='+artist_name+' feat\. ).*', song.artist_name.text, re.I)
 						if x:
 							possible_collaborations.add((artist_name, x.group()))
 							# logging.info('maybe add collab section in db {}'.format(possible_collaborations))
 				except AttributeError, e:
-					logging.error("Couldn't find artist name or track name {}. Try in LyricDownloader.find_titles".format(e))
+					logging.error("""{} Couldn't find artist name or track name {}.
+						Try in LyricDownloader.find_titles""".format(time.strftime('%D:%H:%M:%S'),e))
 					continue
 				except UnicodeError, e:
-					logging.error("Always some unicode error thing {}. Try in LyricDownloader.find_titles".format(e))
+					logging.error("""{}Always some unicode error thing {}.
+					 Try in LyricDownloader.find_titles""".format(time.strftime('%D:%H:%M:%S'),e))
 					continue
 			page_count += 1
+			# print page_count, len(songs)
+			if len(songs) >= 10 or page_count >= 10:
+				# print 'BREAKING OUT OF THE WHILE'
+				break
+
 		collabs = Downloader.check_collabs(possible_collaborations)
 		return songs, collabs
 
@@ -83,7 +91,7 @@ class Downloader():
 			source = urllib.urlopen(url)
 			if source.code != 200:
 				continue
-			logging.info('crawled url: {} '.format(url)) 
+			logging.info('crawled url: {} {}'.format(time.strftime('%D:%H:%M:%S'),url)) 
 			soup = BeautifulSoup(source.read())
 			source.close()
 			lyric = soup.find('span', id='lyrics-html')

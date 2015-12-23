@@ -1,4 +1,4 @@
-import urllib, nltk, json
+import urllib, nltk, json, time
 from urlparse import urljoin
 from bs4 import BeautifulSoup
 from lyricDownloader import Downloader
@@ -32,37 +32,42 @@ class Artist(object):
 	def start(self, max_num_artist = 15):
 		while self.artist_pool:
 			self.artist_name = self.artist_pool.popleft()
+			# logging.info('Looking for songs of {} artist pool contains {} artists'.format(self.artist_name,\
+			 len(self.artist_pool)))
 			titles_stored_songs = zip(*self.stored_songs)[1]
 			set_track_titles, self.collaborations = Downloader.find_titles(self.artist_name, self.base_url, titles_stored_songs)
 			if not set_track_titles:
 				continue
 			self.proceeded_artist_names.add(self.artist_name)
-			for collab_artist in zip(*self.collaborations)[1]:
-				if collab_artist in self.proceeded_artist_names:
-					continue
-				self.artist_pool.append(collab_artist)
+			if self.collaborations:
+				for collab_artist in zip(*self.collaborations)[1]:
+					if collab_artist in self.proceeded_artist_names:
+						continue
+					self.artist_pool.append(collab_artist)
 			[self.track_titles.append(track[1]) for track in set_track_titles]
 			self.all = Downloader.return_lyrics(set_track_titles, Artist.conn)
 			[self.lyrics.append(lyric[2]) for lyric in self.all]
 			self.store_data()
+			print len(self.artist_pool)
 			if len(self.artist_pool) == 15:
+				print "reached goal, exiting"
 				exit()
-			# logging.info('THESE ARE THE POSSIBLE COLLABORATIONS {}'.format(self.collaborations))
+
 	
 	def db_check(self):
 		if not self.c.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='Lyrics'""").fetchone():
 			self.c.execute('CREATE TABLE Lyrics (artist_name, title, lyric, hash)')
-			logging.info("created a table: Lyrics")
+			logging.info("{} created a table: Lyrics".format(time.strftime('%D:%H:%M:%S')))
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x')) #blank and bad fix
 		
 		if not self.c.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='Collabs'""").fetchone():
 			self.c.execute('CREATE TABLE Collabs (artist_name, featured_artist)')
-			logging.info('created a table: Collabs')
+			logging.info('{}created a table: Collabs'.format(time.strftime('%D:%H:%M:%S')))
 			# self.c.execute('INSERT INTO Lyrics VALUES (?,?)', (self.artist_name,'x'))
 			
 		 #awesome stuff with the LIKE en percent, sort of a re
 		x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
-		logging.info('these are all the occurences of the artist: {}'.format(x))
+		logging.info('{}these are all the occurences of the artist: {}'.format(time.strftime('%D:%H:%M:%S'),x))
 		if not x:
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x'))
 			x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
@@ -74,8 +79,8 @@ class Artist(object):
 		self.c.executemany('''INSERT INTO Lyrics VALUES (?,?,?,?)''', self.all)
 		self.c.executemany('''INSERT INTO Collabs VALUES (?,?)''', self.collaborations)
 		self.conn.commit()
-		logging.info('stored data')
-		# logging.info("artist stored in db with {}".format(self.all))
+		logging.info('{} stored data'.format(time.strftime('%D:%H:%M:%S')))
+
 
 	def normalize_link(self, link):
 		"""
@@ -89,8 +94,8 @@ class Artist(object):
 			return urljoin(self.basic_base, link)
 
 if __name__ == '__main__':
-	a1 = Artist('David Guetta')
-	x,c = a1.start()
+	a1 = Artist('The Weeknd')
+	a1.start()
 	# # data = a1.db_check()
 	
 
