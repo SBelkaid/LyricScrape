@@ -22,6 +22,7 @@ class Downloader():
 		page_count = 0
 		songs = set()
 		splitted_searching = artist_name.split(' ')
+		possible_collaborations = set()
 		while 1:
 			url = link.format(artist_name = artist_name, iteration = page_count)
 			source = urllib.urlopen(url)
@@ -32,7 +33,6 @@ class Downloader():
 			source.close()
 			if not soup.track_list:
 				break
-			# debug_l = []
 			tracks = soup.find_all('track')
 			for song in tracks:
 				try:
@@ -42,20 +42,16 @@ class Downloader():
 					if not song.has_lyrics.text == '1':
 						# print '{} doesn\'t have a lyric, continuing'.format(song.track_name.text)
 						continue
-					# debug_l.append(song.artist_name.text)
-					# result = re.search(artist_name, str(song.artist_name.text))
 					splitted_retrieved_name = song.artist_name.text.split(' ')
 					if len(splitted_searching) == len(splitted_retrieved_name) and\
 					 len(splitted_searching[0]) == len(splitted_retrieved_name[0]): # heeeeeeel gaar
 						songs.add((song.artist_name.text,song.track_name.text)) #add tag element.text for collabs
 						logging.info('Added song: {}'.format(song.track_name.text))
 					if len(splitted_searching) != len(splitted_retrieved_name):
-						collab = splitted_retrieved_name[-len(splitted_searching):]
-						logging.info('maybe add collab section in db {}'.format(collab))
-
-					# if result:
-						# songs.add((song.artist_name.text,song.track_name.text)) #add tag element.text for collabs
-						# logging.info('Added song: {}'.format(song.track_name.text))
+						x = re.search('(?<='+artist_name+' feat\.).*', song.artist_name.text, re.I)
+						if x:
+							possible_collaborations.add((artist_name, x.group()))
+							logging.info('maybe add collab section in db {}'.format(possible_collaborations))
 				except AttributeError, e:
 					logging.error("Couldn't find artist name or track name {}. Try in LyricDownloader.find_titles".format(e))
 					continue
@@ -63,9 +59,14 @@ class Downloader():
 					logging.error("Always some unicode error thing {}. Try in LyricDownloader.find_titles".format(e))
 					continue
 			page_count += 1
-			# return debug_l
+		collabs = Downloader.check_collabs(possible_collaborations)
+		return songs, collabs
 
-		return songs
+	@staticmethod
+	def check_collabs(possible_collaborations):
+		for e in possible_collaborations:
+			print "this is a possible collab {}".format(e)
+		return possible_collaborations
 
 	@staticmethod
 	def return_lyrics(artist_data, db_conn, limit=10):
@@ -134,8 +135,7 @@ class Downloader():
 	        logging.info('The document is already in the index. It was created at %s' % this_timestamp)
 	        existing = True
 	        
-	    return existing, checksum 
-
+	    return existing, checksum
 
 
 
