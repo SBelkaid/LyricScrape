@@ -32,10 +32,9 @@ class Artist(object):
 	def start(self, max_num_artist = 15):
 		while self.artist_pool:
 			self.artist_name = self.artist_pool.popleft()
-			# logging.info('Looking for songs of {} artist pool contains {} artists'.format(self.artist_name,\
-			 len(self.artist_pool)))
 			titles_stored_songs = zip(*self.stored_songs)[1]
-			set_track_titles, self.collaborations = Downloader.find_titles(self.artist_name, self.base_url, titles_stored_songs)
+			set_track_titles, self.collaborations = Downloader.find_titles(self.artist_name,\
+										 self.base_url, titles_stored_songs)
 			if not set_track_titles:
 				continue
 			self.proceeded_artist_names.add(self.artist_name)
@@ -48,8 +47,8 @@ class Artist(object):
 			self.all = Downloader.return_lyrics(set_track_titles, Artist.conn)
 			[self.lyrics.append(lyric[2]) for lyric in self.all]
 			self.store_data()
-			print len(self.artist_pool)
-			if len(self.artist_pool) == 15:
+			print len(self.proceeded_artist_names)
+			if len(self.proceeded_artist_names) >= 15:
 				print "reached goal, exiting"
 				exit()
 
@@ -94,7 +93,7 @@ class Artist(object):
 			return urljoin(self.basic_base, link)
 
 if __name__ == '__main__':
-	a1 = Artist('The Weeknd')
+	a1 = Artist('Amy Winehouse')
 	a1.start()
 	# # data = a1.db_check()
 	
