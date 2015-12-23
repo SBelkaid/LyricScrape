@@ -51,7 +51,7 @@ class Downloader():
 						x = re.search('(?<='+artist_name+' feat\.).*', song.artist_name.text, re.I)
 						if x:
 							possible_collaborations.add((artist_name, x.group()))
-							logging.info('maybe add collab section in db {}'.format(possible_collaborations))
+							# logging.info('maybe add collab section in db {}'.format(possible_collaborations))
 				except AttributeError, e:
 					logging.error("Couldn't find artist name or track name {}. Try in LyricDownloader.find_titles".format(e))
 					continue
@@ -64,8 +64,6 @@ class Downloader():
 
 	@staticmethod
 	def check_collabs(possible_collaborations):
-		for e in possible_collaborations:
-			print "this is a possible collab {}".format(e)
 		return possible_collaborations
 
 	@staticmethod
