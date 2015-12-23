@@ -29,7 +29,7 @@ class Artist(object):
 		self.collaborations = None
 
 
-	def start(self, max_num_artist = 15):
+	def start(self, max_num_artist = 50):
 		while self.artist_pool:
 			self.artist_name = self.artist_pool.popleft()
 			titles_stored_songs = zip(*self.stored_songs)[1]
@@ -48,7 +48,7 @@ class Artist(object):
 			[self.lyrics.append(lyric[2]) for lyric in self.all]
 			self.store_data()
 			print len(self.proceeded_artist_names)
-			if len(self.proceeded_artist_names) >= 15:
+			if len(self.proceeded_artist_names) >= max_num_artist:
 				print "reached goal, exiting"
 				exit()
 
