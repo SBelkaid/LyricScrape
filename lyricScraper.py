@@ -74,7 +74,8 @@ class Artist(object):
 		self.c.executemany('''INSERT INTO Lyrics VALUES (?,?,?,?)''', self.all)
 		self.c.executemany('''INSERT INTO Collabs VALUES (?,?)''', self.collaborations)
 		self.conn.commit()
-		logging.info("artist stored in db with {}".format(self.all))
+		logging.info('stored data')
+		# logging.info("artist stored in db with {}".format(self.all))
 
 	def normalize_link(self, link):
 		"""
