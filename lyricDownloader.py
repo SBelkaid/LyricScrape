@@ -47,7 +47,7 @@ class Downloader():
 					if len(splitted_searching) == len(splitted_retrieved_name) and\
 					 len(splitted_searching[0]) == len(splitted_retrieved_name[0]): # heeeeeeel gaar
 						songs.add((song.artist_name.text,song.track_name.text)) #add tag element.text for collabs
-						logging.info('{} Found song: {}'.format(time.strftime('%D:%H:%M:%S'),song.track_name.text))
+						# logging.info('{} Found song: {}'.format(time.strftime('%D:%H:%M:%S'),song.track_name.text))
 					if len(splitted_searching) != len(splitted_retrieved_name):
 						x = re.search('(?<='+artist_name+' feat\. ).*', song.artist_name.text, re.I)
 						if x:
@@ -91,7 +91,7 @@ class Downloader():
 			source = urllib.urlopen(url)
 			if source.code != 200:
 				continue
-			logging.info('crawled url: {} {}'.format(time.strftime('%D:%H:%M:%S'),url)) 
+			# logging.info('crawled url: {} {}'.format(time.strftime('%D:%H:%M:%S'),url)) 
 			soup = BeautifulSoup(source.read())
 			source.close()
 			lyric = soup.find('span', id='lyrics-html')
@@ -134,11 +134,11 @@ class Downloader():
 	    first_hit = results.fetchone()
 	    if first_hit is None:
 	        #The song is not in the database
-	        logging.info('{} The document is not in the index and will be indexed'.format(time.strftime('%D:%H:%M:%S')))
+	        # logging.info('{} The document is not in the index and will be indexed'.format(time.strftime('%D:%H:%M:%S')))
 	        existing = False
 	    else:
 	        this_id, this_has, this_timestamp = first_hit
-	        logging.info('The document is already in the index. It was created at %s' % this_timestamp)
+	        # logging.info('The document is already in the index. It was created at %s' % this_timestamp)
 	        existing = True
 	        
 	    return existing, checksum

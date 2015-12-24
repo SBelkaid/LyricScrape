@@ -65,7 +65,7 @@ class Artist(object):
 			
 		 #awesome stuff with the LIKE en percent, sort of a re
 		x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
-		logging.info('{}these are all the occurences of the artist: {}'.format(time.strftime('%D:%H:%M:%S'),x))
+		# logging.info('{}these are all the occurences of the artist: {}'.format(time.strftime('%D:%H:%M:%S'),x))
 		if not x:
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x'))
 			x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
