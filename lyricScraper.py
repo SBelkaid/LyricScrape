@@ -47,9 +47,8 @@ class Artist(object):
 			self.all = Downloader.return_lyrics(set_track_titles, Artist.conn)
 			[self.lyrics.append(lyric[2]) for lyric in self.all]
 			self.store_data()
-			print len(self.proceeded_artist_names)
 			if len(self.proceeded_artist_names) >= max_num_artist:
-				print "reached goal, exiting"
+				logging.info("reached goal, exiting")
 				exit()
 
 	
