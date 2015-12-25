@@ -55,13 +55,11 @@ class Artist(object):
 	def db_check(self):
 		if not self.c.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='Lyrics'""").fetchone():
 			self.c.execute('CREATE TABLE Lyrics (artist_name, title, lyric, hash)')
+			self.c.execute('CREATE TABLE Collabs (artist_name, featured_artist)')
 			logging.info("{} created a table: Lyrics".format(time.strftime('%D:%H:%M:%S')))
+			logging.info('{} created a table: Collabs'.format(time.strftime('%D:%H:%M:%S')))
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x')) #blank and bad fix
 		
-		if not self.c.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='Collabs'""").fetchone():
-			self.c.execute('CREATE TABLE Collabs (artist_name, featured_artist)')
-			logging.info('{}created a table: Collabs'.format(time.strftime('%D:%H:%M:%S')))
-			# self.c.execute('INSERT INTO Lyrics VALUES (?,?)', (self.artist_name,'x'))
 			
 		 #awesome stuff with the LIKE en percent, sort of a re
 		x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
