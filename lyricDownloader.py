@@ -24,16 +24,20 @@ class Downloader():
 		splitted_searching = artist_name.split(' ')
 		possible_collaborations = set()
 		while 1:
-			url = link.format(artist_name = artist_name, iteration = page_count)
-			source = urllib.urlopen(url)
-			if source.code != 200:
-				logging.error('Check artist name, opening url not equal 200')
-				break
-			soup = BeautifulSoup(source.read())
-			source.close()
-			if not soup.track_list:
-				break
-			tracks = soup.find_all('track')
+			try:
+				url = link.format(artist_name = artist_name, iteration = page_count)
+				source = urllib.urlopen(url)
+				if source.code != 200:
+					logging.error('Check artist name, opening url not equal 200')
+					break
+				soup = BeautifulSoup(source.read())
+				source.close()
+				if not soup.track_list:
+					break
+				tracks = soup.find_all('track')
+			except UnicodeEncodeError, e:
+				logging.error('UnicodeEncodeError in the first try of find_titles')
+				continue
 			for song in tracks:
 				try:
 					if song.track_name.text in stored:
