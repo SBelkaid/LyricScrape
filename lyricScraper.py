@@ -90,7 +90,7 @@ class Artist(object):
 			return urljoin(self.basic_base, link)
 
 if __name__ == '__main__':
-	a1 = Artist('Amy Winehouse')
+	a1 = Artist('The Weeknd')
 	a1.start()
 	# # data = a1.db_check()
 	
