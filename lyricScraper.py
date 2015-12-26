@@ -7,6 +7,7 @@ import sqlite3
 import logging 
 
 logging.basicConfig(filename='logger.log',level=logging.DEBUG)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 
 class Artist(object):
@@ -24,8 +25,8 @@ class Artist(object):
 		self.proceeded_artist_names = set()
 		self.artist_pool.append(artist_name)
 		self.artist_name = artist_name
-		self.splitters = ['feat', ',', '&']
 		self.stored_songs = self.db_check()
+		self.splitters = ['feat', ',', '&']
 		self.collaborations = None
 
 
@@ -47,7 +48,7 @@ class Artist(object):
 			self.all = Downloader.return_lyrics(set_track_titles, Artist.conn)
 			[self.lyrics.append(lyric[2]) for lyric in self.all]
 			self.store_data()
-			if len(self.proceeded_artist_names) >= max_num_artist:
+			if len(self.proceeded_artist_names) >= max_num_artist: #50 different artists
 				logging.info("reached goal, exiting")
 				exit()
 
@@ -56,14 +57,13 @@ class Artist(object):
 		if not self.c.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='Lyrics'""").fetchone():
 			self.c.execute('CREATE TABLE Lyrics (artist_name, title, lyric, hash)')
 			self.c.execute('CREATE TABLE Collabs (artist_name, featured_artist)')
-			logging.info("{} created a table: Lyrics".format(time.strftime('%D:%H:%M:%S')))
-			logging.info('{} created a table: Collabs'.format(time.strftime('%D:%H:%M:%S')))
+			logging.info("{} created a table: Lyrics".format(time.strftime('%D %H:%M:%S')))
+			logging.info('{} created a table: Collabs'.format(time.strftime('%D %H:%M:%S')))
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x')) #blank and bad fix
 		
 			
 		 #awesome stuff with the LIKE en percent, sort of a re
 		x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
-		# logging.info('{}these are all the occurences of the artist: {}'.format(time.strftime('%D:%H:%M:%S'),x))
 		if not x:
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x'))
 			x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
@@ -75,7 +75,7 @@ class Artist(object):
 		self.c.executemany('''INSERT INTO Lyrics VALUES (?,?,?,?)''', self.all)
 		self.c.executemany('''INSERT INTO Collabs VALUES (?,?)''', self.collaborations)
 		self.conn.commit()
-		logging.info('{} stored data'.format(time.strftime('%D:%H:%M:%S')))
+		logging.info('{} stored data'.format(time.strftime('%D %H:%M:%S')))
 
 
 	def normalize_link(self, link):
@@ -90,7 +90,7 @@ class Artist(object):
 			return urljoin(self.basic_base, link)
 
 if __name__ == '__main__':
-	a1 = Artist('The Weeknd')
+	a1 = Artist('Oasis')
 	a1.start()
 	# # data = a1.db_check()
 	

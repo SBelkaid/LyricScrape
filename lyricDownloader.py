@@ -1,4 +1,4 @@
-import urllib, re, time
+import requests, re, time
 import sqlite3
 from urlparse import urljoin
 from bs4 import BeautifulSoup
@@ -6,6 +6,7 @@ import logging, hashlib
 
 
 logging.basicConfig(filename='logger.log',level=logging.DEBUG)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 
 class Downloader():
@@ -25,19 +26,20 @@ class Downloader():
 		possible_collaborations = set()
 		while 1:
 			try:
-				url = link.format(artist_name = artist_name, iteration = page_count)
-				source = urllib.urlopen(url)
-				if source.code != 200:
-					logging.error('Check artist name, opening url not equal 200')
-					break
-				soup = BeautifulSoup(source.read())
-				source.close()
-				if not soup.track_list:
-					break
-				tracks = soup.find_all('track')
+				payload = {'page': page_count, 'q_track_artist': artist_name}
+				source = requests.get(link, payload)
 			except UnicodeEncodeError, e:
 				logging.error('UnicodeEncodeError in the first try of find_titles')
-				continue
+				raise e
+			if source.status_code != 200:
+				logging.error('Check artist name, opening url not equal 200')
+				break
+			soup = BeautifulSoup(source.content, 'lxml')
+			source.close()
+			if not soup.track_list:
+				break
+			tracks = soup.find_all('track')
+
 			for song in tracks:
 				try:
 					if song.track_name.text in stored:
@@ -50,25 +52,24 @@ class Downloader():
 					# print splitted_retrieved_name, splitted_searching
 					if len(splitted_searching) == len(splitted_retrieved_name) and\
 					 len(splitted_searching[0]) == len(splitted_retrieved_name[0]): # heeeeeeel gaar
-						songs.add((song.artist_name.text,song.track_name.text)) #add tag element.text for collabs
-						# logging.info('{} Found song: {}'.format(time.strftime('%D:%H:%M:%S'),song.track_name.text))
+						songs.add((song.artist_name.text,song.track_name.text))
 					if len(splitted_searching) != len(splitted_retrieved_name):
-						x = re.search('(?<='+artist_name+' feat\. ).*', song.artist_name.text, re.I)
+						x = re.search('(?<='+artist_name.strip('()')+' feat\. ).*', song.artist_name.text, re.I)
 						if x:
 							possible_collaborations.add((artist_name, x.group()))
 							# logging.info('maybe add collab section in db {}'.format(possible_collaborations))
 				except AttributeError, e:
 					logging.error("""{} Couldn't find artist name or track name {}.
-						Try in LyricDownloader.find_titles""".format(time.strftime('%D:%H:%M:%S'),e))
+						Try in LyricDownloader.find_titles""".format(time.strftime('%D %H:%M:%S'),e))
 					continue
 				except UnicodeError, e:
 					logging.error("""{}Always some unicode error thing {}.
-					 Try in LyricDownloader.find_titles""".format(time.strftime('%D:%H:%M:%S'),e))
+					 Try in LyricDownloader.find_titles""".format(time.strftime('%D %H:%M:%S'),e))
 					continue
 			page_count += 1
 			# print page_count, len(songs)
 			if len(songs) >= 10 or page_count >= 10:
-				# print 'BREAKING OUT OF THE WHILE'
+				# print 'BREAKING OUT OF THE WHILE', crawled 10 pages, enough for now..
 				break
 
 		collabs = Downloader.check_collabs(possible_collaborations)
@@ -92,11 +93,11 @@ class Downloader():
 			song = copy_of_artist_data.pop()
 			url = urljoin(Downloader.base_url_lyric,'/'.join(song)).encode('utf-8')
 			# print url
-			source = urllib.urlopen(url)
-			if source.code != 200:
+			source = requests.get(url)
+			if source.status_code != 200:
 				continue
 			# logging.info('crawled url: {} {}'.format(time.strftime('%D:%H:%M:%S'),url)) 
-			soup = BeautifulSoup(source.read())
+			soup = BeautifulSoup(source.content, 'lxml')
 			source.close()
 			lyric = soup.find('span', id='lyrics-html')
 			if lyric:
