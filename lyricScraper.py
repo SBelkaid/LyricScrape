@@ -10,7 +10,7 @@ logging.basicConfig(filename='logger.log',level=logging.DEBUG)
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 
-class Artist(object):
+class Scraper(object):
 	conn = sqlite3.connect('artistsStored2.db')
 	c = conn.cursor()
 	base_url = open('start_url2', 'r').read()
@@ -29,7 +29,6 @@ class Artist(object):
 		self.splitters = ['feat', ',', '&']
 		self.collaborations = None
 
-
 	def start(self, max_num_artist = 50):
 		while self.artist_pool:
 			self.artist_name = self.artist_pool.popleft()
@@ -45,14 +44,13 @@ class Artist(object):
 						continue
 					self.artist_pool.append(collab_artist)
 			[self.track_titles.append(track[1]) for track in set_track_titles]
-			self.all = Downloader.return_lyrics(set_track_titles, Artist.conn)
+			self.all = Downloader.return_lyrics(set_track_titles, Scraper.conn)
 			[self.lyrics.append(lyric[2]) for lyric in self.all]
 			self.store_data()
 			if len(self.proceeded_artist_names) >= max_num_artist: #50 different artists
 				logging.info("reached goal, exiting")
 				exit()
 
-	
 	def db_check(self):
 		if not self.c.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='Lyrics'""").fetchone():
 			self.c.execute('CREATE TABLE Lyrics (artist_name, title, lyric, hash)')
@@ -61,8 +59,6 @@ class Artist(object):
 			logging.info('{} created a table: Collabs'.format(time.strftime('%D %H:%M:%S')))
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x')) #blank and bad fix
 		
-			
-		 #awesome stuff with the LIKE en percent, sort of a re
 		x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
 		if not x:
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x'))
@@ -77,7 +73,6 @@ class Artist(object):
 		self.conn.commit()
 		logging.info('{} stored data'.format(time.strftime('%D %H:%M:%S')))
 
-
 	def normalize_link(self, link):
 		"""
 		handle absolute and relative links
@@ -90,8 +85,5 @@ class Artist(object):
 			return urljoin(self.basic_base, link)
 
 if __name__ == '__main__':
-	a1 = Artist('Oasis')
+	a1 = Scraper('Oasis')
 	a1.start()
-	# # data = a1.db_check()
-	
-
