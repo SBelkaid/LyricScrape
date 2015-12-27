@@ -62,6 +62,7 @@ class Scraper(object):
 		x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
 		if not x:
 			self.c.execute('INSERT INTO Lyrics VALUES (?,?,?,?)', (self.artist_name,'x','x','x'))
+			self.c.execute('INSERT INTO Collabs VALUES (?,?)', (self.artist_name,'x'))
 			x = self.c.execute('SELECT * FROM Lyrics WHERE artist_name LIKE ?',('%'+self.artist_name+'%',)).fetchall()
 
 		self.conn.commit()
